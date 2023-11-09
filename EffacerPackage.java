@@ -146,7 +146,7 @@ public class EffacerPackage {
 
 case "M":
             Scanner scannerM = new Scanner(System.in);
-            System.out.println("Entré le nouveau nom de Package :  ");
+            System.out.println("Entré le nouveau nom de Package (sans le provider, il ne doit y avoir qu'un package dans la liste) :  ");
             String newPackageM = scannerM.nextLine();
 
             // Construire la requête SQL d'insertion
