@@ -15,7 +15,7 @@ public class EffacerPackage {
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        String mot1, mot2, mot3, mot4 = "%";
+        String mot1, mot2, mot3, mot4;
         System.out.print("Entrez une valeur (exemple : GALLICA_GLOBAL_ALLJOURNALS ou GALLICA_GLOBAL_ALL% pour une recherche plus large): ");
         String inputVariable = sc.nextLine();
         String[] mots = inputVariable.split("_");
@@ -130,15 +130,15 @@ public class EffacerPackage {
                 String confirmationT = scannerT.nextLine();
                 if (confirmationT.equalsIgnoreCase("oui")) {
                         String sqlDelT = "DELETE FROM provider_package WHERE package LIKE '" + mot2 + "_" + mot3 + "' AND provider_idt_provider = " + providerIdG ;
-			String sqlInsT = "INSERT INTO provider_package_deleted (PACKAGE, PROVIDER) VALUES ('" + mot2 + "_" + mot3 + "', '" + mot1 + "')";
+			//String sqlInsT = "INSERT INTO provider_package_deleted (PACKAGE, PROVIDER) VALUES ('" + mot2 + "_" + mot3 + "', '" + mot1 + "')";
                         System.out.println("Requête de suppression : " + sqlDelT);
                         PreparedStatement deleteStmt = null;
                         try (Connection connDT = DriverManager.getConnection(url, user, password);
-				PreparedStatement deleteStmtT = connDT.prepareStatement(sqlDelT); 
-				PreparedStatement insertStmtT = connDT.prepareStatement(sqlInsT)) {
+				//PreparedStatement insertStmtT = connDT.prepareStatement(sqlInsT);
+				PreparedStatement deleteStmtT = connDT.prepareStatement(sqlDelT)) { 
 
                                 rowsAffectedT = deleteStmtT.executeUpdate();
-				insertStmtT.executeUpdate();
+				//insertStmtT.executeUpdate();
                                 System.out.println("Vous avez effacé " + rowsAffectedT + " lignes du package " + mot2 + "_" + mot3 + "   de l'éditeur " + mot1);
                                 } catch (SQLException e) {
                                         e.printStackTrace();
