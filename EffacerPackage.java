@@ -10,12 +10,18 @@ import java.io.FileInputStream;
 import java.io.File;
 import java.util.Properties;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+
 public class EffacerPackage {
 
-
+    // Créer un logger pour cette classe
+    private static final Logger logger = LogManager.getLogger(EffacerPackage.class);
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         String mot1, mot2, mot3, mot4;
+	logger.info("Démarrage de l'application EffacerPackage."); // demarrage de la log
         System.out.print("Entrez une valeur (exemple : GALLICA_GLOBAL_ALLJOURNALS ou GALLICA_GLOBAL_ALL% pour une recherche plus large): ");
         String inputVariable = sc.nextLine();
         String[] mots = inputVariable.split("_");
@@ -24,7 +30,7 @@ public class EffacerPackage {
                 throw new IllegalArgumentException("Je n'ai pas assez d'informations pour retourner un résultat, merci d'affiner votre recherche.");
             }
         } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
+	    logger.error(e.getMessage());
             return;
         }
         mot1 = mots[0];
@@ -47,7 +53,7 @@ public class EffacerPackage {
 		password = prop.getProperty("DB_PASSWORD");
 	System.out.println("Connxion TLS : " + url);
         } catch (Exception e) {
-            e.printStackTrace();
+	    logger.error("Erreur de connexion à la base de données.", e);
             return;
         }
 	// requête SQL avec une variable
@@ -59,7 +65,7 @@ public class EffacerPackage {
             System.out.println("Requête : " + sql);
 	} catch (SQLException e) {
 	System.out.println("Connxion TLS NOK : " + url);
-	e.printStackTrace();
+	logger.error("Erreur de connexion à la base de données : " + url, e);
 	return;
 	}
 	System.out.println("Conn = " + conn);
@@ -104,14 +110,13 @@ public class EffacerPackage {
  		       throw new Exception("La valeur doit être comprise entre 1 et " + tab.size());
  		   }
 		} catch (NumberFormatException e) {
-			System.out.println("Var : " + supVariable + " valeur : " + supVariable.equalsIgnoreCase("M"));
+			logger.error("Erreur lors de l'exécution de la requête SQL.", e);
  		   if (!supVariable.equalsIgnoreCase("T") && !supVariable.equalsIgnoreCase("M")) {
 		        System.out.println("Valeur invalide !");
  		       return; // ou utiliser break; si vous êtes dans une boucle
   		  }
 		} catch (Exception e) {
-		    System.out.println(e.getMessage());
-		    System.out.println("Var2 : " + supVariable + " valeur : " + supVariable.equalsIgnoreCase("M"));
+		    logger.error("Erreur lors de l'exécution de la requête SQL.", e);
  		   return; // ou utiliser break; si vous êtes dans une boucle
 		}
 // update ligne_kbart set provider_package_package='NouvelleValeur'  where provider_package_idt_provider=561 and  provider_package_package='AncieneValeur';
@@ -141,7 +146,7 @@ public class EffacerPackage {
 				//insertStmtT.executeUpdate();
                                 System.out.println("Vous avez effacé " + rowsAffectedT + " lignes du package " + mot2 + "_" + mot3 + "   de l'éditeur " + mot1);
                                 } catch (SQLException e) {
-                                        e.printStackTrace();
+					logger.error("Erreur lors de l'exécution de la requête SQL.", e);
                                 }
                 } break;
 
@@ -168,7 +173,7 @@ case "M":
                 // Afficher un message de confirmation
                 System.out.println("Le nouveau package " + newPackageM + " a été ajouté à la base et toutes les lignes de la table ligne_kbart qui ont le package " + mot2 + "_" + mot3 + " et l'éditeur " + mot1 + " ont été mises à jour avec le nouveau package.");
             } catch (SQLException e) {
-                e.printStackTrace();
+		logger.error("Erreur lors de l'exécution de la requête SQL.", e);
             }
             break;
 
@@ -198,13 +203,13 @@ case "M":
 				int rowsAffected = deleteStmt.executeUpdate();
 				System.out.println("Vous avez effacé la ligne qui a pour date " + datePackage + " du package " + packageName + " de l'éditeur " + providerName);
 			} catch (SQLException e) {
-				e.printStackTrace();
+				logger.error("Erreur lors de l'exécution de la requête SQL.", e);
 			}
 		}
 		break;
 	}
 	} catch (SQLException e) {
-            System.out.println(e.getMessage());
+	    logger.error("Erreur lors de l'exécution de la requête SQL.", e);
         }
 
 	}
