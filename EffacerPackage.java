@@ -91,7 +91,8 @@ public class EffacerPackage {
             			Scanner dc = new Scanner(System.in);
             			System.out.print("Entrez une valeur à supprimer (0 -> aucune, T -> toutes, M -> modification) : ");
             			String supVariable = dc.next();
-	    			int supVariableInt = -1;
+
+            			int supVariableInt = -1;
 				try {
 		    			supVariableInt = Integer.parseInt(supVariable);
 		    			if (supVariableInt <= 0 || supVariableInt > tab.size()) {
@@ -108,7 +109,6 @@ public class EffacerPackage {
 		    			System.out.println("Var2 : " + supVariable + " valeur : " + supVariable.equalsIgnoreCase("M"));
  		   			return; // ou utiliser break; si vous êtes dans une boucle
 				}
-
             			switch (supVariable) {
 	    			case "0":  // ne rien supprimer
 					System.out.println("Aucune ligne n'est supprimée");
@@ -153,6 +153,7 @@ public class EffacerPackage {
 						e.printStackTrace();
 					}
 					if (!kabartExists) {
+						System.out.println("le Kabart n'existe pas !!!");
             				String sqlInsertM = "INSERT INTO PROVIDER_PACKAGE (PACKAGE, DATE_P, LABEL_ABES, PROVIDER_IDT_PROVIDER) SELECT '" + newPackageM + "', DATE_P, LABEL_ABES, PROVIDER_IDT_PROVIDER FROM PROVIDER_PACKAGE WHERE PROVIDER_IDT_PROVIDER= " + providerIdG + " AND PACKAGE= '" + mot2 + "_" + mot3 + "'" ;
 					try (Connection connM = DriverManager.getConnection(url, user, password);
 					PreparedStatement insertStmtM = connM.prepareStatement(sqlInsertM)) {
@@ -163,8 +164,8 @@ public class EffacerPackage {
 					}
             				String sqlUpdateM = "UPDATE ligne_kbart SET provider_package_package = '" + newPackageM + "' WHERE provider_package_idt_provider = " + providerIdG + " AND provider_package_package = '" + mot2 + "_" + mot3 + "'" ;
             				try (Connection connM = DriverManager.getConnection(url, user, password);
-                    			PreparedStatement insertStmtM = connM.prepareStatement(sqlInsertM)) {
-                				updateStmtM.executeUpdate();
+                    			PreparedStatement updateStmtM = connM.prepareStatement(sqlUpdateM)) {
+						updateStmtM.executeUpdate();
                 				System.out.println("Le nouveau package " + newPackageM + " a été ajouté à la base et toutes les lignes de la table ligne_kbart qui ont le package " + mot2 + "_" + mot3 + " et l'éditeur " + mot1 + " ont été mises à jour avec le nouveau package.");
             				} catch (SQLException e) {
                 				e.printStackTrace();
@@ -174,7 +175,7 @@ public class EffacerPackage {
 
 
 				default:
-					SimpleEntry<Integer, String> element = tab.get(supVariableInt - 1);
+					SimpleEntry<Integer, String> element = tab.get(Integer.parseInt(supVariable) - 1);
 					String[] result = element.getValue().split(" ");
 					String providerName = result[0];
 					int providerIdg = Integer.parseInt(result[1]);
