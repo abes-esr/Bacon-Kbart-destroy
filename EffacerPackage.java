@@ -162,10 +162,12 @@ public class EffacerPackage {
 						e.printStackTrace();
 					}
 					}
+						System.out.println("le Kabart existe !!!");
             				String sqlUpdateM = "UPDATE ligne_kbart SET provider_package_package = '" + newPackageM + "' WHERE provider_package_idt_provider = " + providerIdG + " AND provider_package_package = '" + mot2 + "_" + mot3 + "'" ;
             				try (Connection connM = DriverManager.getConnection(url, user, password);
                     			PreparedStatement updateStmtM = connM.prepareStatement(sqlUpdateM)) {
 						updateStmtM.executeUpdate();
+						System.out.println("UPDATE ligne_kbart SET provider_package_package = '" + newPackageM + "' WHERE provider_package_idt_provider = " + providerIdG + " AND provider_package_package = '" + mot2 + "_" + mot3 + "'");
                 				System.out.println("Le nouveau package " + newPackageM + " a été ajouté à la base et toutes les lignes de la table ligne_kbart qui ont le package " + mot2 + "_" + mot3 + " et l'éditeur " + mot1 + " ont été mises à jour avec le nouveau package.");
             				} catch (SQLException e) {
                 				e.printStackTrace();
