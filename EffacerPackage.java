@@ -121,13 +121,15 @@ public class EffacerPackage {
                 			System.out.println("Veuillez répondre par 'oui' ou 'non': ");
                 			String confirmationT = scannerT.nextLine();
                 			if (confirmationT.equalsIgnoreCase("oui")) {
-                        			String sqlDelT = "DELETE FROM provider_package WHERE package LIKE '" + mot2 + "_" + mot3 + "' AND provider_idt_provider = " + providerIdG ;
+                        			String sqlDelT1 = "DELETE FROM provider_package WHERE package LIKE '" + mot2 + "_" + mot3 + "' AND provider_idt_provider = " + providerIdG ;
+						String sqlDelT2 = "DELETE FROM ligne_kabart WHERE provider_package_package LIKE '" + mot2 + "_" + mot3 + "' AND provider_package_idt_provider = " + providerIdG ;
 						String sqlInsT = "INSERT INTO provider_package_deleted (PACKAGE, PROVIDER) VALUES ('" + mot2 + "_" + mot3 + "', '" + mot1 + "')";
-                        			System.out.println("Requête de suppression : " + sqlDelT);
+                        			System.out.println("Requête de suppression : " + sqlDelT1);
                         			PreparedStatement deleteStmt = null;
                         			try (Connection connDT = DriverManager.getConnection(url, user, password);
 						PreparedStatement insertStmtT = connDT.prepareStatement(sqlInsT);
-						PreparedStatement deleteStmtT = connDT.prepareStatement(sqlDelT)) { 
+						PreparedStatement deleteStmtT1 = connDT.prepareStatement(sqlDelT1);
+						PreparedStatement deleteStmtT2 = connDT.prepareStatement(sqlDelT2)) { 
                                 			rowsAffectedT = deleteStmtT.executeUpdate();
 							insertStmtT.executeUpdate();
                                 			System.out.println("Vous avez effacé " + rowsAffectedT + " lignes du package " + mot2 + "_" + mot3 + "   de l'éditeur " + mot1);
