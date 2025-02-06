@@ -160,9 +160,9 @@ public class EffacerPackage {
 						insertStmtM.executeUpdate();
 					} catch (SQLException e) {
 						e.printStackTrace();
-					}
+					} }
 					else {
-						String sqlUpdatePPM = "UPDATE PROVIDER_PACKAGE SET PACKAGE = '" + newPackageM + "' WHERE PROVIDER_IDT_PROVIDER= " + providerIdG + " AND PACKAGE= '" + mot2 + "_" + mot3 + "'" ;
+					String sqlUpdatePPM = "UPDATE PROVIDER_PACKAGE SET PACKAGE = '" + newPackageM + "' WHERE PROVIDER_IDT_PROVIDER= " + providerIdG + " AND PACKAGE= '" + mot2 + "_" + mot3 + "'" ;
 					try (Connection connM = DriverManager.getConnection(url, user, password);
 					PreparedStatement updatePPStmtM = connM.prepareStatement(sqlUpdatePPM)) {
 						updatePPStmtM.executeUpdate();
