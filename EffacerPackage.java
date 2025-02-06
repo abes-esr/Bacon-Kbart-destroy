@@ -161,6 +161,14 @@ public class EffacerPackage {
 					} catch (SQLException e) {
 						e.printStackTrace();
 					}
+					else {
+						String sqlUpdatePPM = "UPDATE PROVIDER_PACKAGE SET PACKAGE = '" + newPackageM + "' WHERE PROVIDER_IDT_PROVIDER= " + providerIdG + " AND PACKAGE= '" + mot2 + "_" + mot3 + "'" ;
+					try (Connection connM = DriverManager.getConnection(url, user, password);
+					PreparedStatement updatePPStmtM = connM.prepareStatement(sqlUpdatePPM)) {
+						updatePPStmtM.executeUpdate();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
 					}
 						System.out.println("le Kabart existe !!!");
             				String sqlUpdateM = "UPDATE ligne_kbart SET provider_package_package = '" + newPackageM + "' WHERE provider_package_idt_provider = " + providerIdG + " AND provider_package_package = '" + mot2 + "_" + mot3 + "'" ;
