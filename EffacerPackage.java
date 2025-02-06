@@ -140,12 +140,30 @@ public class EffacerPackage {
             				Scanner scannerM = new Scanner(System.in);
             				System.out.println("Entré le nouveau nom de Package sans le provider et un seul package à la fois :  ");
             				String newPackageM = scannerM.nextLine();
+					 // Vérifier si le nom kabart existe déjà
+                    			String sqlCheckExists = "SELECT COUNT(*) FROM PROVIDER_PACKAGE WHERE PACKAGE = '" + newPackageM + "' and PROVIDER_IDT_PROVIDER = " + providerIdG ;
+                    			boolean kabartExists = false;
+					try (Connection connCheck = DriverManager.getConnection(url, user, password);
+					PreparedStatement checkStmt = connCheck.prepareStatement(sqlCheckExists);
+					ResultSet rstmp = checkStmt.executeQuery()) {
+						if (rstmp.next() && rstmp.getInt(1) > 0) {
+							kabartExists = true; // kabart existe déjà
+						}       
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+					if (!kabartExists) {
             				String sqlInsertM = "INSERT INTO PROVIDER_PACKAGE (PACKAGE, DATE_P, LABEL_ABES, PROVIDER_IDT_PROVIDER) SELECT '" + newPackageM + "', DATE_P, LABEL_ABES, PROVIDER_IDT_PROVIDER FROM PROVIDER_PACKAGE WHERE PROVIDER_IDT_PROVIDER= " + providerIdG + " AND PACKAGE= '" + mot2 + "_" + mot3 + "'" ;
+					try (Connection connM = DriverManager.getConnection(url, user, password);
+					PreparedStatement insertStmtM = connM.prepareStatement(sqlInsertM)) {
+						insertStmtM.executeUpdate();
+					} catch (SQLException e) {
+						e.printStackTrace();
+					}
+					}
             				String sqlUpdateM = "UPDATE ligne_kbart SET provider_package_package = '" + newPackageM + "' WHERE provider_package_idt_provider = " + providerIdG + " AND provider_package_package = '" + mot2 + "_" + mot3 + "'" ;
             				try (Connection connM = DriverManager.getConnection(url, user, password);
-                    			PreparedStatement insertStmtM = connM.prepareStatement(sqlInsertM);
-                    			PreparedStatement updateStmtM = connM.prepareStatement(sqlUpdateM)) {
-                				insertStmtM.executeUpdate();
+                    			PreparedStatement insertStmtM = connM.prepareStatement(sqlInsertM)) {
                 				updateStmtM.executeUpdate();
                 				System.out.println("Le nouveau package " + newPackageM + " a été ajouté à la base et toutes les lignes de la table ligne_kbart qui ont le package " + mot2 + "_" + mot3 + " et l'éditeur " + mot1 + " ont été mises à jour avec le nouveau package.");
             				} catch (SQLException e) {
