@@ -1,3 +1,4 @@
+
 import java.sql.*;
 import java.util.*;
 import java.text.SimpleDateFormat;
@@ -156,65 +157,133 @@ public class EffacerPackage {
         }
     }
 
-    private void deleteSingle(List<SimpleEntry<Integer, String>> results, String[] parts, String actionStr) {
-        try {
-            int index = Integer.parseInt(actionStr);
-            if (index < 1 || index > results.size()) {
-                System.out.println("Numéro invalide.");
-                return;
-            }
-            
-            SimpleEntry<Integer, String> entry = results.get(index - 1);
-            String[] data = entry.getValue().split(" ");
-            String packageName = data[2];
-            String date = data[3];
-            int providerId = Integer.parseInt(data[1]);
-            
-            if (!confirmAction("Supprimer la ligne du " + date + " ?")) {
-                return;
-            }
-            
-            String sql = "DELETE FROM provider_package WHERE package = ? AND date_p = ? AND provider_idt_provider = ?";
-            
-            try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
-                 PreparedStatement stmt = conn.prepareStatement(sql)) {
-                
-                stmt.setString(1, packageName);
-                stmt.setDate(2, java.sql.Date.valueOf(date));
-                stmt.setInt(3, providerId);
-                
-                int rowsDeleted = stmt.executeUpdate();
-                System.out.println("✓ " + rowsDeleted + " ligne(s) supprimée(s).");
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Veuillez entrer un numéro valide.");
-        } catch (SQLException e) {
-            System.out.println("Erreur SQL : " + e.getMessage());
+
+
+private void deleteSingle(List<SimpleEntry<Integer, String>> results, String[] parts, String actionStr) {
+    try {
+        int index = Integer.parseInt(actionStr);
+        if (index < 1 || index > results.size()) {
+            System.out.println("Numéro invalide.");
+            return;
         }
+        
+        SimpleEntry<Integer, String> entry = results.get(index - 1);
+        String[] data = entry.getValue().split(" ");
+        String packageName = data[2];
+        String date = data[3];
+        int providerId = Integer.parseInt(data[1]);
+        
+        // Vérifier si c'est le dernier package (providerId + packageName n'apparaît qu'une fois)
+        if (isLastPackage(results, providerId, packageName)) {
+            System.out.println("C'est le dernier package. Appel de deleteAll...");
+            deleteAllForPackage(providerId, packageName, parts[0]);
+            return;
+        }
+        
+        if (!confirmAction("Supprimer la ligne du " + date + " ?")) {
+            return;
+        }
+        
+        String sql = "DELETE FROM provider_package WHERE package = ? AND date_p = ? AND provider_idt_provider = ?";
+        
+        try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, packageName);
+            stmt.setDate(2, java.sql.Date.valueOf(date));
+            stmt.setInt(3, providerId);
+            
+            int rowsDeleted = stmt.executeUpdate();
+            System.out.println("✓ " + rowsDeleted + " ligne(s) supprimée(s).");
+        }
+    } catch (NumberFormatException e) {
+        System.out.println("Veuillez entrer un numéro valide.");
+    } catch (SQLException e) {
+        System.out.println("Erreur SQL : " + e.getMessage());
+    }
+}
+
+private boolean isLastPackage(List<SimpleEntry<Integer, String>> results, int providerId, String packageName) {
+    int count = 0;
+    for (SimpleEntry<Integer, String> entry : results) {
+        String[] data = entry.getValue().split(" ");
+        int id = Integer.parseInt(data[1]);
+        String pkg = data[2];
+        
+        if (id == providerId && pkg.equals(packageName)) {
+            count++;
+        }
+    }
+    return count == 1;
+}
+
+private void deleteAllForPackage(int providerId, String packageName, String provider) {
+    if (!confirmAction("C'est le dernier package. Êtes-vous sûr de vouloir le supprimer complètement ?")) {
+        return;
+    }
+    
+    try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+        String sqlDeletePP = "DELETE FROM provider_package WHERE package = ? AND provider_idt_provider = ?";
+        String sqlDeleteLK = "DELETE FROM ligne_kbart WHERE provider_package_package = ? AND provider_package_idt_provider = ?";
+        String sqlInsert = "INSERT INTO provider_package_deleted (PACKAGE, PROVIDER) VALUES (?, ?)";
+        
+        try (PreparedStatement deleteStmtPP = conn.prepareStatement(sqlDeletePP);
+             PreparedStatement deleteStmtLK = conn.prepareStatement(sqlDeleteLK);
+             PreparedStatement insertStmt = conn.prepareStatement(sqlInsert)) {
+            
+            deleteStmtPP.setString(1, packageName);
+            deleteStmtPP.setInt(2, providerId);
+            
+            deleteStmtLK.setString(1, packageName);
+            deleteStmtLK.setInt(2, providerId);
+            
+            insertStmt.setString(1, packageName);
+            insertStmt.setString(2, provider);
+            
+            int rowsDeleted = deleteStmtPP.executeUpdate();
+            deleteStmtLK.executeUpdate();
+            insertStmt.executeUpdate();
+            
+            System.out.println("✓ " + rowsDeleted + " lignes supprimées et archivées.");
+        }
+    } catch (SQLException e) {
+        System.out.println("Erreur lors de la suppression : " + e.getMessage());
+    }
+}
+
+private void modifyPackage(List<SimpleEntry<Integer, String>> results, String[] parts) {
+    // Vérifier qu'il n'y a qu'un seul package unique
+    Set<String> uniquePackages = new HashSet<>();
+    for (SimpleEntry<Integer, String> entry : results) {
+        String[] data = entry.getValue().split(" ");
+        String packageName = data[2];
+        uniquePackages.add(packageName);
     }
 
-    private void modifyPackage(List<SimpleEntry<Integer, String>> results, String[] parts) {
-        String oldPackage = parts[1] + "_" + parts[2];
-        String newPackage = getUserInput("Entrez le nouveau nom du package : ");
-        int providerId = getProviderIdFromResults(results);
-        
-        try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
-            // Vérifier si le nouveau package existe déjà
-            if (packageExists(conn, newPackage, providerId)) {
-                System.out.println("Le package '" + newPackage + "' existe déjà.");
-                updateExistingPackage(conn, oldPackage, newPackage, providerId);
-            } else {
-                System.out.println("Le package n'existe pas, création en cours...");
-                insertNewPackage(conn, oldPackage, newPackage, providerId);
-            }
-            
-            // Mettre à jour la table ligne_kbart
-            updateLigneKbart(conn, oldPackage, newPackage, providerId);
-            System.out.println("✓ Package renommé de '" + oldPackage + "' à '" + newPackage + "'.");
-        } catch (SQLException e) {
-            System.out.println("Erreur lors de la modification : " + e.getMessage());
-        }
+    if (uniquePackages.size() > 1) {
+        System.out.println("Erreur : Il y a plusieurs packages différents. Vous ne pouvez modifier qu'un seul package à la fois.");
+        return;
     }
+
+    String oldPackage = parts[1] + "_" + parts[2];
+    String newPackage = getUserInput("Entrez le nouveau nom du package : ");
+    int providerId = getProviderIdFromResults(results);
+
+    try (Connection conn = DriverManager.getConnection(dbUrl, dbUser, dbPassword)) {
+        if (packageExists(conn, newPackage, providerId)) {
+            System.out.println("Le package '" + newPackage + "' existe déjà.");
+            updateExistingPackage(conn, oldPackage, newPackage, providerId);
+        } else {
+            System.out.println("Le package n'existe pas, création en cours...");
+            insertNewPackage(conn, oldPackage, newPackage, providerId);
+        }
+
+        updateLigneKbart(conn, oldPackage, newPackage, providerId);
+        System.out.println("✓ Package renommé de '" + oldPackage + "' à '" + newPackage + "'.");
+    } catch (SQLException e) {
+        System.out.println("Erreur lors de la modification : " + e.getMessage());
+    }
+}
 
     private boolean packageExists(Connection conn, String packageName, int providerId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM PROVIDER_PACKAGE WHERE PACKAGE = ? AND PROVIDER_IDT_PROVIDER = ?";
@@ -283,5 +352,4 @@ public class EffacerPackage {
         return response.equalsIgnoreCase("oui");
     }
 }
-
 
