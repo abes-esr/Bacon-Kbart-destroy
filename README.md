@@ -6,6 +6,9 @@ Guide court de lancement du programme.
 
 - Java 8 ou plus
 - Un fichier `config.properties` valide (base Oracle)
+- Emplacement du fichier `config.properties`:
+  - en execution depuis le repo: a la racine du projet (`Bacon-Kbart-destroy/config.properties`)
+  - en execution autonome: dans le meme dossier que `EffacerPackageUI-autonome.jar` (ex: `dist/config.properties` ou `EffacerPackage-autonome/config.properties`)
 
 ## 2. Compiler
 
